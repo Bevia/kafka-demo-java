@@ -35,15 +35,3 @@ docker exec -it kafka kafka-console-consumer --bootstrap-server localhost:9092 -
 ```
 
 (Commands run inside the container use the INTERNAL listener on 9092.)
-
-## Python → Java mapping
-
-| Python (confluent-kafka) | Java (kafka-clients) |
-|---|---|
-| `Producer(config)` | `KafkaProducer<String, String>` |
-| `producer.produce(..., callback=delivery_report)` | `producer.send(record, (metadata, exception) -> ...)` |
-| `producer.flush()` | `producer.flush()` / `close()` |
-| `Consumer(config)` + `subscribe` | `KafkaConsumer<String, String>` + `subscribe` |
-| `consumer.poll(1.0)` | `consumer.poll(Duration.ofSeconds(1))` |
-| `json.dumps` / `json.loads` | Jackson `ObjectMapper` + `Order` record |
-| `KeyboardInterrupt` | shutdown hook + `consumer.wakeup()` |
