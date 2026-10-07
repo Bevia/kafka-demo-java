@@ -17,6 +17,7 @@
         <kafka.version>3.9.1</kafka.version>
         <jackson.version>2.18.2</jackson.version>
         <slf4j.version>2.0.16</slf4j.version>
+        <java-websocket.version>1.5.7</java-websocket.version>
     </properties>
 
     <dependencies>
@@ -32,6 +33,13 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Lightweight WebSocket server (PosGateway) and client (PosTerminal) -->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>${java-websocket.version}</version>
         </dependency>
 
         <!-- kafka-clients brings slf4j-api 1.7.x, which can't find slf4j-simple 2.x
@@ -58,7 +66,7 @@
                 <version>3.13.0</version>
             </plugin>
 
-            <!-- Lets you run: mvn exec:java@producer  /  mvn exec:java@tracker -->
+            <!-- Lets you run: mvn exec:java@producer | @tracker | @gateway | @pos | @status -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -74,6 +82,24 @@
                         <id>tracker</id>
                         <configuration>
                             <mainClass>com.example.kafka.OrderTracker</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>gateway</id>
+                        <configuration>
+                            <mainClass>com.example.kafka.PosGateway</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pos</id>
+                        <configuration>
+                            <mainClass>com.example.kafka.PosTerminal</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>status</id>
+                        <configuration>
+                            <mainClass>com.example.kafka.OrderStatusMonitor</mainClass>
                         </configuration>
                     </execution>
                 </executions>

@@ -1,5 +1,7 @@
 # Architecture
 
+For the POS gateway extension (WebSocket delivery, `order-status` topic), see [pos-gateway.md](pos-gateway.md).
+
 ## High-level overview
 
 ```mermaid
