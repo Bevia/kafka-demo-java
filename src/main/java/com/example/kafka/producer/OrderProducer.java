@@ -1,4 +1,7 @@
-package com.example.kafka;
+package com.example.kafka.producer;
+
+import com.example.kafka.config.KafkaConfig;
+import com.example.kafka.model.Order;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.KafkaProducer;

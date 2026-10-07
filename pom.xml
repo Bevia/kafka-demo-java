@@ -75,31 +75,31 @@
                     <execution>
                         <id>producer</id>
                         <configuration>
-                            <mainClass>com.example.kafka.OrderProducer</mainClass>
+                            <mainClass>com.example.kafka.producer.OrderProducer</mainClass>
                         </configuration>
                     </execution>
                     <execution>
                         <id>tracker</id>
                         <configuration>
-                            <mainClass>com.example.kafka.OrderTracker</mainClass>
+                            <mainClass>com.example.kafka.consumer.OrderTracker</mainClass>
                         </configuration>
                     </execution>
                     <execution>
                         <id>gateway</id>
                         <configuration>
-                            <mainClass>com.example.kafka.PosGateway</mainClass>
+                            <mainClass>com.example.kafka.gateway.PosGateway</mainClass>
                         </configuration>
                     </execution>
                     <execution>
                         <id>pos</id>
                         <configuration>
-                            <mainClass>com.example.kafka.PosTerminal</mainClass>
+                            <mainClass>com.example.kafka.pos.PosTerminal</mainClass>
                         </configuration>
                     </execution>
                     <execution>
                         <id>status</id>
                         <configuration>
-                            <mainClass>com.example.kafka.OrderStatusMonitor</mainClass>
+                            <mainClass>com.example.kafka.consumer.OrderStatusMonitor</mainClass>
                         </configuration>
                     </execution>
                 </executions>

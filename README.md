@@ -6,6 +6,25 @@ Requirements: JDK 17+, Maven 3.9+, Docker.
 
 See [docs/architecture.md](docs/architecture.md) for the high-level and message-flow diagrams (Mermaid), and [docs/pos-gateway.md](docs/pos-gateway.md) for the POS gateway flow.
 
+## Project structure
+
+```
+src/main/java/com/example/kafka/
+├── config/     KafkaConfig          shared settings: broker address, topic and group names, ports
+├── model/      Order                event on the "orders" topic
+│               OrderStatus          event on the "order-status" topic
+│               PosMessage           WebSocket messages between gateway and POS (ORDER / ACK)
+├── producer/   OrderProducer        publishes orders, keyed by POS id
+├── consumer/   OrderTracker         reads "orders" (group order-tracker)
+│               OrderStatusMonitor   reads "order-status" (group order-status-monitor)
+├── gateway/    PosGateway           Kafka consumer + WebSocket server: delivers orders to POS terminals
+│               DeliveryManager      pending queue per POS, retries, publishes order-status
+│               PosWebSocketServer   accepts POS connections on :8887/pos/{posId}
+└── pos/        PosTerminal          simulated POS terminal (WebSocket client)
+```
+
+`model` and `config` are shared; the other packages only depend on them, never on each other.
+
 ## Run
 
 ```bash

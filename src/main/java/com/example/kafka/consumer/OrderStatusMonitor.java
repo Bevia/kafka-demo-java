@@ -1,4 +1,7 @@
-package com.example.kafka;
+package com.example.kafka.consumer;
+
+import com.example.kafka.config.KafkaConfig;
+import com.example.kafka.model.OrderStatus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

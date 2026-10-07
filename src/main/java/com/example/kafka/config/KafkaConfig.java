@@ -1,4 +1,4 @@
-package com.example.kafka;
+package com.example.kafka.config;
 
 /** Shared settings. Override the broker address with the KAFKA_BOOTSTRAP_SERVERS env var. */
 public final class KafkaConfig {

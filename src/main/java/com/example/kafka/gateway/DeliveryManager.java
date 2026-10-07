@@ -1,4 +1,9 @@
-package com.example.kafka;
+package com.example.kafka.gateway;
+
+import com.example.kafka.config.KafkaConfig;
+import com.example.kafka.model.Order;
+import com.example.kafka.model.OrderStatus;
+import com.example.kafka.model.PosMessage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

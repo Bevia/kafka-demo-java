@@ -1,4 +1,6 @@
-package com.example.kafka;
+package com.example.kafka.gateway;
+
+import com.example.kafka.model.PosMessage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
