@@ -4,6 +4,8 @@ Java port of the Kafka crash-course project: `OrderProducer` sends an order even
 
 Requirements: JDK 17+, Maven 3.9+, Docker.
 
+See [docs/architecture.md](docs/architecture.md) for the high-level and message-flow diagrams (Mermaid).
+
 ## Run
 
 ```bash
