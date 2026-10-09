@@ -39,7 +39,7 @@ public class OrderProducer {
                         UUID.randomUUID().toString(),
                         posId,
                         "Vincent",
-                        "Office table",
+                        "New Windows Computer",
                         1);
 
                 String value = MAPPER.writeValueAsString(order);
