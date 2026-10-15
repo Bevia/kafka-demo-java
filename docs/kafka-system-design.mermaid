@@ -1,0 +1,64 @@
+---
+title: kafka-demo-java — Kafka System Design
+config:
+  layout: elk
+  flowchart:
+    wrappingWidth: 320
+---
+flowchart LR
+
+    %% ───────── PRODUCER (host machine) ─────────
+    subgraph PRODUCERS["Producer · host machine"]
+        OP["<b>OrderProducer</b><br/><i>mvn exec:java@producer</i><br/>value: Order JSON (incl. pos_id)<br/>key: pos_id"]
+    end
+
+    %% ───────── KAFKA (Docker) ─────────
+    subgraph DOCKER["Docker container: kafka<br/>confluentinc/cp-kafka:7.8.11 · KRaft single node"]
+        direction TB
+        T_ORD[("<b>orders</b><br/>key: pos_id (UTF-8 bytes)<br/>value: Order as JSON (UTF-8 bytes)")]
+        T_STA[("<b>order-status</b><br/>key: order_id (UTF-8 bytes)<br/>value: OrderStatus as JSON (UTF-8 bytes)<br/>QUEUED when stored<br/>DELIVERED on ACK<br/>FAILED on reject or give-up")]
+        OFF[("<b>__consumer_offsets</b><br/>committed offset per group")]
+        INFO[["<b>broker + controller</b><br/>stores raw bytes · no schema check<br/>EXTERNAL localhost:19092 → apps on the host<br/>INTERNAL kafka:9092 → inside Docker<br/>CONTROLLER :9093 → KRaft<br/>data → volume kafka_kraft"]]
+    end
+
+    %% ───────── CONSUMERS (host machine) ─────────
+    subgraph CONSUMERS["Consumers · host machine · one consumer group each"]
+        direction TB
+        GW["<b>PosGateway</b><br/><i>mvn exec:java@gateway</i><br/>group <b>pos-gateway</b> · auto-commit off<br/>────────────<br/>KafkaConsumer → DeliveryManager<br/>in-memory pending queue per POS<br/>skips duplicate order_id · rejects missing pos_id<br/>resend after 5 s · max 3 attempts · offline limit 2 min<br/>PosWebSocketServer ws://localhost:8887/pos/{posId}"]
+        TRK["<b>OrderTracker</b><br/><i>mvn exec:java@tracker</i><br/>group <b>order-tracker</b> · auto-commit<br/>prints each order"]
+        MON["<b>OrderStatusMonitor</b><br/><i>mvn exec:java@status</i><br/>group <b>order-status-monitor</b> · auto-commit<br/>prints QUEUED · DELIVERED · FAILED"]
+    end
+
+    %% ───────── POS TERMINALS ─────────
+    subgraph EDGE["POS terminals · WebSocket clients"]
+        POS["<b>PosTerminal</b> × N<br/><i>mvn exec:java@pos</i><br/>e.g. POS-001, POS-002<br/>skips already-processed order_id<br/>and re-sends ACK<br/>ORDER {order, attempt} · ACK {order_id}<br/>test modes: --flaky · --no-ack"]
+    end
+
+    %% ───────── FLOWS ─────────
+    OP    -->|"① send<br/>Order<br/>→ Jackson → JSON<br/>→ StringSerializer<br/>→ UTF-8 bytes"| T_ORD
+    T_ORD -->|"② poll<br/>UTF-8 bytes<br/>→ StringDeserializer<br/>→ JSON → Jackson<br/>→ Order"| GW
+    T_ORD -->|"poll<br/>same as ②<br/>bytes → Order"| TRK
+    GW    -.->|"③ commitSync<br/>after batch stored"| OFF
+    GW   <==>|"④ WebSocket<br/>JSON text frames<br/>ORDER → · ← ACK"| POS
+    GW    -->|"⑤ status events<br/>OrderStatus<br/>→ Jackson → JSON<br/>→ StringSerializer<br/>→ UTF-8 bytes"| T_STA
+    T_STA -->|"⑥ poll<br/>UTF-8 bytes<br/>→ StringDeserializer<br/>→ JSON → Jackson<br/>→ OrderStatus"| MON
+
+    %% ───────── STYLE ─────────
+    classDef prod  fill:#e3f0ff,stroke:#2f6fd6,color:#0b1f44
+    classDef topic fill:#ffe2bf,stroke:#e07a10,color:#3a1e00
+    classDef info  fill:#fff8ee,stroke:#e07a10,color:#5a3a10
+    classDef gw    fill:#eceeff,stroke:#4a55c9,color:#13173f
+    classDef cons  fill:#f3e8ff,stroke:#8a3fd1,color:#2a0f45
+    classDef pos   fill:#e2f5e9,stroke:#2e9a5a,color:#0d2e1a
+
+    class OP prod
+    class T_ORD,T_STA,OFF topic
+    class INFO info
+    class GW gw
+    class TRK,MON cons
+    class POS pos
+
+    style DOCKER fill:#fffaf3,stroke:#e07a10,stroke-width:2px
+    style PRODUCERS fill:#f6faff,stroke:#2f6fd6
+    style CONSUMERS fill:#fbf9ff,stroke:#8a3fd1
+    style EDGE fill:#f4fbf7,stroke:#2e9a5a
