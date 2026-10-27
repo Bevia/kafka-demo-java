@@ -24,7 +24,7 @@ flowchart LR
     %% ───────── CONSUMERS (host machine) ─────────
     subgraph CONSUMERS["Consumers · host machine · one consumer group each"]
         direction TB
-        GW["<b>PosGateway</b><br/><i>mvn exec:java@gateway</i><br/>group <b>pos-gateway</b> · auto-commit off<br/>────────────<br/>KafkaConsumer → DeliveryManager<br/>in-memory pending queue per POS<br/>skips duplicate order_id · rejects missing pos_id<br/>resend after 5 s · max 3 attempts · offline limit 2 min<br/>PosWebSocketServer ws://localhost:8887/pos/{posId}"]
+        GW["<b>PosGateway</b><br/><i>mvn exec:java@gateway</i><br/>group <b>pos-gateway</b> · auto-commit off<br/>────────────<br/>KafkaConsumer → DeliveryManager<br/>in-memory pending queue per POS<br/>skips duplicate order_id · rejects missing pos_id<br/>resend after 5 s · max 3 attempts · offline limit 2 min<br/>PosWebSocketServer ws://localhost:8887/pos/{posId}<br/>────────────<br/>⚠ demo only: offset committed before POS ACK<br/>and pending store is in memory →<br/>a gateway crash loses queued orders"]
         TRK["<b>OrderTracker</b><br/><i>mvn exec:java@tracker</i><br/>group <b>order-tracker</b> · auto-commit<br/>prints each order"]
         MON["<b>OrderStatusMonitor</b><br/><i>mvn exec:java@status</i><br/>group <b>order-status-monitor</b> · auto-commit<br/>prints QUEUED · DELIVERED · FAILED"]
     end
@@ -38,10 +38,12 @@ flowchart LR
     OP    -->|"① send<br/>Order<br/>→ Jackson → JSON<br/>→ StringSerializer<br/>→ UTF-8 bytes"| T_ORD
     T_ORD -->|"② poll<br/>UTF-8 bytes<br/>→ StringDeserializer<br/>→ JSON → Jackson<br/>→ Order"| GW
     T_ORD -->|"poll<br/>same as ②<br/>bytes → Order"| TRK
-    GW    -.->|"③ commitSync<br/>after batch stored"| OFF
-    GW   <==>|"④ WebSocket<br/>JSON text frames<br/>ORDER → · ← ACK"| POS
-    GW    -->|"⑤ status events<br/>OrderStatus<br/>→ Jackson → JSON<br/>→ StringSerializer<br/>→ UTF-8 bytes"| T_STA
-    T_STA -->|"⑥ poll<br/>UTF-8 bytes<br/>→ StringDeserializer<br/>→ JSON → Jackson<br/>→ OrderStatus"| MON
+    GW    -->|"③ QUEUED when stored<br/>⑦ DELIVERED on ACK · FAILED on give-up<br/>OrderStatus<br/>→ Jackson → JSON<br/>→ StringSerializer<br/>→ UTF-8 bytes"| T_STA
+    GW   <==>|"WebSocket · JSON text frames<br/>④ ORDER → (now if POS online,<br/>else on reconnect)<br/>⑥ ← ACK {order_id}"| POS
+    GW    -.->|"⑤ commitSync<br/>after batch stored<br/>(before any POS ACK)"| OFF
+    T_STA -->|"⑧ poll<br/>UTF-8 bytes<br/>→ StringDeserializer<br/>→ JSON → Jackson<br/>→ OrderStatus"| MON
+    OFF <-.-|"auto-commit<br/>every 5 s"| TRK
+    OFF <-.-|"auto-commit<br/>every 5 s"| MON
 
     %% ───────── STYLE ─────────
     classDef prod  fill:#e3f0ff,stroke:#2f6fd6,color:#0b1f44
