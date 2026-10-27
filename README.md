@@ -46,12 +46,12 @@ In IntelliJ you can also run `OrderTracker` / `OrderProducer` directly from thei
 
 Extends the demo with a WebSocket gateway that delivers orders to POS terminals and reports what happened on an `order-status` topic. Read [docs/pos-gateway.md](docs/pos-gateway.md) for the design and diagrams.
 
-| Class | Role |
-|---|---|
-| `OrderProducer [posId] [count]` | Sends orders keyed by POS id (default `POS-001`, 1 order) |
-| `PosGateway` | Consumes `orders` (group `pos-gateway`), pushes to POS over WebSocket on `:8887`, retries, publishes `order-status` |
-| `PosTerminal [posId] [--flaky\|--no-ack]` | Simulated POS: prints orders and ACKs them |
-| `OrderStatusMonitor` | Consumes `order-status` and prints QUEUED / DELIVERED / FAILED |
+| Class                                     | Role                                                                                                                |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `OrderProducer [posId] [count]`           | Sends orders keyed by POS id (default `POS-001`, 1 order)                                                           |
+| `PosGateway`                              | Consumes `orders` (group `pos-gateway`), pushes to POS over WebSocket on `:8887`, retries, publishes `order-status` |
+| `PosTerminal [posId] [--flaky\|--no-ack]` | Simulated POS: prints orders and ACKs them                                                                          |
+| `OrderStatusMonitor`                      | Consumes `order-status` and prints QUEUED / DELIVERED / FAILED                                                      |
 
 Run each in its own terminal (or from IntelliJ; program arguments go in the run configuration):
 
@@ -99,12 +99,17 @@ docker exec -it kafka kafka-console-consumer --bootstrap-server localhost:9092 -
 
 ## Python → Java mapping
 
-| Python (confluent-kafka) | Java (kafka-clients) |
-|---|---|
-| `Producer(config)` | `KafkaProducer<String, String>` |
+| Python (confluent-kafka)                          | Java (kafka-clients)                                  |
+| ------------------------------------------------- | ----------------------------------------------------- |
+| `Producer(config)`                                | `KafkaProducer<String, String>`                       |
 | `producer.produce(..., callback=delivery_report)` | `producer.send(record, (metadata, exception) -> ...)` |
-| `producer.flush()` | `producer.flush()` / `close()` |
-| `Consumer(config)` + `subscribe` | `KafkaConsumer<String, String>` + `subscribe` |
-| `consumer.poll(1.0)` | `consumer.poll(Duration.ofSeconds(1))` |
-| `json.dumps` / `json.loads` | Jackson `ObjectMapper` + `Order` record |
-| `KeyboardInterrupt` | shutdown hook + `consumer.wakeup()` |
+| `producer.flush()`                                | `producer.flush()` / `close()`                        |
+| `Consumer(config)` + `subscribe`                  | `KafkaConsumer<String, String>` + `subscribe`         |
+| `consumer.poll(1.0)`                              | `consumer.poll(Duration.ofSeconds(1))`                |
+| `json.dumps` / `json.loads`                       | Jackson `ObjectMapper` + `Order` record               |
+| `KeyboardInterrupt`                               | shutdown hook + `consumer.wakeup()`                   |
+
+## generate docs
+
+example:
+/anthropic-skills:docs @src/main/java/com/example/kafka/consumer/OrderTracker.java
