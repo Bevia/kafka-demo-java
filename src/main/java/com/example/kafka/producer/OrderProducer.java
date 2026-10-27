@@ -39,8 +39,8 @@ public class OrderProducer {
                         UUID.randomUUID().toString(),
                         posId,
                         "Vincent",
-                        "New Windows Computer",
-                        1);
+                        "New Mac Computer",
+                        2);
 
                 String value = MAPPER.writeValueAsString(order);
 
