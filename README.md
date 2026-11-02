@@ -1,6 +1,6 @@
 # kafka-demo-java
 
-Java port of the Kafka crash-course project: `OrderProducer` sends an order event to the `orders` topic, and `OrderTracker` consumes and prints it. A `PosGateway` extension delivers orders to POS terminals over WebSocket (see below).
+Java port of the Kafka crash-course project: `OrderProducer` sends an order event to the `orders` topic, and `OrderTracker` consumes and prints it. A `PosGateway` extension delivers orders to POS terminals over WebSocket and reports each outcome on an `order-status` topic (see below).
 
 Requirements: JDK 17+, Maven 3.9+, Docker.
 
@@ -81,6 +81,25 @@ Optionally give `orders` more partitions so several POS ids are spread out (exis
 ```bash
 docker exec -it kafka kafka-topics --bootstrap-server localhost:9092 --alter --topic orders --partitions 3
 ```
+
+**Demo limitation:** the gateway keeps pending orders in memory and commits the Kafka offset as soon as an order is stored, so restarting the gateway loses orders that a POS hasn't ACKed yet. A production gateway needs a durable pending store (database, Redis...).
+
+## Documentation
+
+Running and testing:
+
+- [docs/RUNNING-FROM-CLASSES.md](docs/RUNNING-FROM-CLASSES.md): run the classes step by step, with one POS, two POS terminals, and the failure scenarios
+- [docs/STEP-BY-STEP-RUNNING-DEMO.md](docs/STEP-BY-STEP-RUNNING-DEMO.md): end-to-end walkthrough of the demo
+- [docs/TEST-POS.md](docs/TEST-POS.md) and [docs/TEST-2-POS.md](docs/TEST-2-POS.md): test cases for one and two POS terminals
+- [docs/RUNNING.md](docs/RUNNING.md): older guide, out of date (describes Homebrew Kafka on 9092 and Spring Boot)
+
+Design:
+
+- [docs/architecture.md](docs/architecture.md), [docs/pos-gateway.md](docs/pos-gateway.md) and [docs/kafka-system-design.mermaid](docs/kafka-system-design.mermaid): architecture and flow diagrams
+- Logical design per class: [OrderProducer](docs/OrderProducer%20Logical%20Design.md), [OrderTracker](docs/OrderTracker%20Logical%20Design.md), [PosGateway](docs/PosGateway%20Logical%20Design.md), [DeliveryManager](docs/DeliveryManager%20Logical%20Design.md), [PosWebSocketServer](docs/PosWebSocketServer%20Logical%20Design.md), [PosTerminal](docs/PosTerminal%20Logical%20Design.md)
+- [docs/KafkaConfig Settings Reference.md](docs/KafkaConfig%20Settings%20Reference.md): every setting and its environment variable
+- [docs/KAFKA-NOTES.md](docs/KAFKA-NOTES.md): Kafka concepts behind the demo
+- [docs/Kafka_POS_Order_Delivery_Solution_Design.docx](docs/Kafka_POS_Order_Delivery_Solution_Design.docx): full solution design document
 
 ## Useful Kafka commands
 
