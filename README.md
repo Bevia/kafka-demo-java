@@ -4,6 +4,10 @@ Java port of the Kafka crash-course project: `OrderProducer` sends an order even
 
 Requirements: JDK 17+, Maven 3.9+, Docker.
 
+![kafka-demo-java system design](images/kafka-system-design.png)
+
+The numbered arrows follow one order end to end: sent to `orders`, polled by the gateway, stored as `QUEUED`, pushed to the POS over WebSocket, offset committed, ACKed by the POS, published as `DELIVERED`, and read by the status monitor. The diagram source is [docs/kafka-system-design.mermaid](docs/kafka-system-design.mermaid).
+
 See [docs/architecture.md](docs/architecture.md) for the high-level and message-flow diagrams (Mermaid), and [docs/pos-gateway.md](docs/pos-gateway.md) for the POS gateway flow.
 
 ## Project structure
